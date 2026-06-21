@@ -1,0 +1,11 @@
+{
+  "domain": "aux_lan",
+  "name": "AUX LAN",
+  "version": "1.0.0",
+  "config_flow": true,
+  "documentation": "https://github.com/renzo-ezagui/ha-aux-lan",
+  "requirements": [],
+  "dependencies": [],
+  "codeowners": ["@renzo-ezagui"],
+  "iot_class": "local_polling"
+}
