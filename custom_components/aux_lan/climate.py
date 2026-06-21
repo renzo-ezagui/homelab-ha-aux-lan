@@ -187,6 +187,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
             mildew=s.mildew,
             fixation_v=s.fixation_v,
             fixation_h=s.fixation_h,
+            caller="set_preset_mode",
         )
         await self.coordinator.async_request_refresh()
 
@@ -210,6 +211,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
                 mildew=s.mildew,
                 fixation_v=s.fixation_v,
                 fixation_h=s.fixation_h,
+                caller="set_hvac_mode(off)",
             )
         else:
             ac_mode = HVAC_TO_MODE.get(hvac_mode, AcMode.COOLING)
@@ -227,6 +229,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
                 mildew=s.mildew,
                 fixation_v=s.fixation_v,
                 fixation_h=s.fixation_h,
+                caller="set_hvac_mode(on)",
             )
         await self.coordinator.async_request_refresh()
 
@@ -252,6 +255,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
             mildew=s.mildew,
             fixation_v=s.fixation_v,
             fixation_h=s.fixation_h,
+            caller="set_temperature",
         )
         await self.coordinator.async_request_refresh()
 
@@ -275,6 +279,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
             mildew=s.mildew,
             fixation_v=s.fixation_v,
             fixation_h=s.fixation_h,
+            caller="set_fan_mode",
         )
         await self.coordinator.async_request_refresh()
 

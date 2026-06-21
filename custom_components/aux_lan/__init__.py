@@ -79,13 +79,14 @@ class AuxLanCoordinator(DataUpdateCoordinator):
                 self.device.get_info(),
             )
             state.ambient_temp = ambient
-            _LOGGER.debug(
-                "[%s] poll ok power=%s temp=%s mode=%s ambient=%s",
+            _LOGGER.info(
+                "[%s] poll: power=%s mode=%s target=%s ambient=%s fan=%s turbo=%s mute=%s sleep=%s "
+                "health=%s display=%s clean=%s mildew=%s fix_v=%s fix_h=%s",
                 self.device_name,
-                state.power,
-                state.target_temp,
-                state.mode,
-                ambient,
+                state.power, state.mode, state.target_temp, ambient, state.fan_speed,
+                state.turbo, state.mute, state.sleep,
+                state.health, state.display, state.clean, state.mildew,
+                state.fixation_v, state.fixation_h,
             )
             return state
         except BroadlinkAuthError:
