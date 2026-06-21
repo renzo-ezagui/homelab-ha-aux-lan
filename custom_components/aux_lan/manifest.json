@@ -1,7 +1,7 @@
 {
   "domain": "aux_lan",
   "name": "AUX LAN",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "config_flow": true,
   "documentation": "https://github.com/renzo-ezagui/ha-aux-lan",
   "requirements": [],
