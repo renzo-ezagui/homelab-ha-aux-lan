@@ -273,6 +273,7 @@ class BroadlinkLanDevice:
         mildew: bool = False,
         fixation_v: int = 0,
         fixation_h: int = 7,
+        caller: str = "",
     ) -> None:
         if self.device_key is None:
             raise BroadlinkAuthError("not authenticated")
@@ -301,6 +302,13 @@ class BroadlinkLanDevice:
         ic = _internet_checksum(bytes(cmd))
         req[25] = (ic >> 8) & 0xFF
         req[26] = ic & 0xFF
+
+        _LOGGER.info(
+            "[%s] set_state caller=%s power=%s temp=%s mode=%s fan=%s turbo=%s mute=%s sleep=%s "
+            "health=%s display=%s clean=%s mildew=%s fix_v=%s fix_h=%s",
+            self.ip, caller, power, temp, mode, fan_speed, turbo, mute, sleep,
+            health, display, clean, mildew, fixation_v, fixation_h,
+        )
 
         packet = _build_packet(
             CMD_PACKET,
