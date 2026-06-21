@@ -72,6 +72,7 @@ class AuxLanSwitch(CoordinatorEntity, SwitchEntity):
         s: AcState | None = self.coordinator.data
         if s is None:
             return
+        _LOGGER.info("[%s] switch %s → %s", self.coordinator.device_name, self._attr, value)
         kwargs = {
             "power": s.power,
             "temp": s.target_temp,
