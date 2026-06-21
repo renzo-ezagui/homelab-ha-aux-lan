@@ -15,7 +15,7 @@ from .broadlink import AcState, BroadlinkAuthError, BroadlinkLanDevice, Broadlin
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "aux_lan"
-PLATFORMS = ["climate"]
+PLATFORMS = ["climate", "switch", "select"]
 SCAN_INTERVAL = timedelta(seconds=30)
 
 
