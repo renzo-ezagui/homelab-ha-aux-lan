@@ -29,8 +29,6 @@ from .broadlink import AcFanSpeed, AcMode, AcState
 
 _LOGGER = logging.getLogger(__name__)
 
-FAN_TURBO = "turbo"
-
 HVAC_TO_MODE: dict[HVACMode, AcMode] = {
     HVACMode.AUTO: AcMode.AUTO,
     HVACMode.COOL: AcMode.COOLING,
@@ -45,7 +43,6 @@ FAN_TO_SPEED: dict[str, AcFanSpeed] = {
     FAN_HIGH: AcFanSpeed.HIGH,
     FAN_MEDIUM: AcFanSpeed.MEDIUM,
     FAN_LOW: AcFanSpeed.LOW,
-    FAN_TURBO: AcFanSpeed.TURBO,
     FAN_AUTO: AcFanSpeed.AUTO,
 }
 
@@ -76,7 +73,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
         HVACMode.DRY,
         HVACMode.FAN_ONLY,
     ]
-    _attr_fan_modes = [FAN_AUTO, FAN_HIGH, FAN_MEDIUM, FAN_LOW, FAN_TURBO]
+    _attr_fan_modes = [FAN_AUTO, FAN_HIGH, FAN_MEDIUM, FAN_LOW]
     _attr_preset_modes = [PRESET_NONE, PRESET_BOOST, "mute", PRESET_SLEEP]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
@@ -269,7 +266,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
             temp=s.target_temp,
             mode=s.mode,
             fan_speed=speed,
-            turbo=speed == AcFanSpeed.TURBO,
+            turbo=s.turbo,
             mute=s.mute,
             sleep=s.sleep,
             health=s.health,
