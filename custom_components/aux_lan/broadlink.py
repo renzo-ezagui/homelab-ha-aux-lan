@@ -76,6 +76,10 @@ class AcState:
     sleep: bool = False
     health: bool = False
     display: bool = True
+    clean: bool = False
+    mildew: bool = False
+    fixation_v: int = 0
+    fixation_h: int = 7
     ambient_temp: float | None = None
     available: bool = False
 
@@ -215,8 +219,12 @@ class BroadlinkLanDevice:
         state.turbo = bool((payload[16] >> 6) & 0x01)
         state.sleep = bool((payload[17] >> 2) & 0x01)
         state.health = bool((payload[20] >> 1) & 0x01)
+        state.clean = bool((payload[20] >> 2) & 0x01)
         if len(payload) > 22:
             state.display = bool((payload[22] >> 4) & 0x01)
+            state.mildew = bool((payload[22] >> 3) & 0x01)
+        state.fixation_v = payload[10] & 0x07
+        state.fixation_h = (payload[11] >> 5) & 0x07
         state.available = True
         return state
 
@@ -261,14 +269,15 @@ class BroadlinkLanDevice:
         sleep: bool = False,
         health: bool = False,
         display: bool = True,
+        clean: bool = False,
+        mildew: bool = False,
+        fixation_v: int = 0,
+        fixation_h: int = 7,
     ) -> None:
         if self.device_key is None:
             raise BroadlinkAuthError("not authenticated")
 
         half_degree = 1 if (temp - int(temp)) >= 0.5 else 0
-        vdir = 0
-        clean = 0
-        mildew = 0
 
         cmd = bytearray(23)
         cmd[0] = 0xBB
@@ -277,13 +286,14 @@ class BroadlinkLanDevice:
         cmd[6] = 0x0F
         cmd[8] = 0x01
         cmd[9] = 0x01
-        cmd[10] = ((int(temp) - 8) << 3) | (vdir & 0x07)
+        cmd[10] = ((int(temp) - 8) << 3) | (fixation_v & 0x07)
+        cmd[11] = (fixation_h & 0x07) << 5
         cmd[12] = 0x0F | (half_degree << 7)
         cmd[13] = (int(fan_speed) & 0x07) << 5
         cmd[14] = (int(turbo) << 6) | (int(mute) << 7)
         cmd[15] = (int(mode) & 0x0F) << 5 | (int(sleep) << 2)
-        cmd[18] = (int(power) << 5) | (int(health) << 1) | (clean << 2)
-        cmd[20] = (int(display) << 4) | (mildew << 3)
+        cmd[18] = (int(power) << 5) | (int(health) << 1) | (int(clean) << 2)
+        cmd[20] = (int(display) << 4) | (int(mildew) << 3)
 
         req = bytearray(32)
         req[0] = 25
