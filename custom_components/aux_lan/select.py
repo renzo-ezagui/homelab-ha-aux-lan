@@ -20,10 +20,10 @@ VANE_OPTIONS = [
     "Mid (3)",
     "Open (5)",
     "Swing (6)",
-    "Auto (7)",
+    "Hold (7)",
 ]
 
-WIRE_TO_OPTION = {1: "Closed (1)", 3: "Mid (3)", 5: "Open (5)", 6: "Swing (6)", 7: "Auto (7)"}
+WIRE_TO_OPTION = {1: "Closed (1)", 3: "Mid (3)", 5: "Open (5)", 6: "Swing (6)", 7: "Hold (7)"}
 OPTION_TO_WIRE = {v: k for k, v in WIRE_TO_OPTION.items()}
 
 
@@ -52,9 +52,12 @@ class AuxLanVaneSelect(CoordinatorEntity, SelectEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.data["mac"])},
         )
+        self._requested_option: str | None = None
 
     @property
     def current_option(self) -> str | None:
+        if self._requested_option is not None:
+            return self._requested_option
         s: AcState | None = self.coordinator.data
         if s is None:
             return None
@@ -64,6 +67,7 @@ class AuxLanVaneSelect(CoordinatorEntity, SelectEntity):
         wire_val = OPTION_TO_WIRE.get(option)
         if wire_val is None:
             return
+        _LOGGER.info("[%s] select fixation_v → %s", self.coordinator.device_name, option)
         s: AcState | None = self.coordinator.data
         if s is None:
             return
@@ -83,4 +87,6 @@ class AuxLanVaneSelect(CoordinatorEntity, SelectEntity):
             fixation_h=s.fixation_h,
             caller="select_fixation_v",
         )
+        self._requested_option = option
+        self.async_write_ha_state()
         await self.coordinator.async_request_refresh()

@@ -158,6 +158,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
         s = self._state
         if s is None:
             return
+        _LOGGER.info("[%s] set_preset_mode %s", self._entry.data["name"], preset_mode)
         turbo = s.turbo
         mute = s.mute
         sleep = s.sleep
@@ -195,7 +196,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
         s = self._state
         if s is None:
             return
-        _LOGGER.debug("[%s] set_hvac_mode %s", self._entry.data["name"], hvac_mode)
+        _LOGGER.info("[%s] set_hvac_mode %s", self._entry.data["name"], hvac_mode)
         if hvac_mode == HVACMode.OFF:
             await self.coordinator.device.set_state(
                 power=False,
@@ -240,7 +241,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
         temp = kwargs.get(ATTR_TEMPERATURE)
         if temp is None:
             return
-        _LOGGER.debug("[%s] set_temperature %s", self._entry.data["name"], temp)
+        _LOGGER.info("[%s] set_temperature %s", self._entry.data["name"], temp)
         await self.coordinator.device.set_state(
             power=s.power,
             temp=float(temp),
@@ -264,7 +265,7 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
         if s is None:
             return
         speed = FAN_TO_SPEED.get(fan_mode, AcFanSpeed.AUTO)
-        _LOGGER.debug("[%s] set_fan_mode %s → %s", self._entry.data["name"], fan_mode, speed)
+        _LOGGER.info("[%s] set_fan_mode %s → %s", self._entry.data["name"], fan_mode, speed)
         await self.coordinator.device.set_state(
             power=s.power,
             temp=s.target_temp,
