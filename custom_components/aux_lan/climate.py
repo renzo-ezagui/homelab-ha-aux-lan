@@ -13,6 +13,9 @@ from homeassistant.components.climate.const import (
     FAN_HIGH,
     FAN_LOW,
     FAN_MEDIUM,
+    PRESET_BOOST,
+    PRESET_NONE,
+    PRESET_SLEEP,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_TEMPERATURE, UnitOfTemperature
@@ -74,9 +77,11 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
         HVACMode.FAN_ONLY,
     ]
     _attr_fan_modes = [FAN_AUTO, FAN_HIGH, FAN_MEDIUM, FAN_LOW, FAN_TURBO]
+    _attr_preset_modes = [PRESET_NONE, PRESET_BOOST, "mute", PRESET_SLEEP]
     _attr_supported_features = (
         ClimateEntityFeature.TARGET_TEMPERATURE
         | ClimateEntityFeature.FAN_MODE
+        | ClimateEntityFeature.PRESET_MODE
         | ClimateEntityFeature.TURN_ON
         | ClimateEntityFeature.TURN_OFF
     )
@@ -125,6 +130,69 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
             return None
         return SPEED_TO_FAN.get(s.fan_speed, FAN_AUTO)
 
+    @property
+    def preset_mode(self) -> str:
+        s = self._state
+        if s is None:
+            return PRESET_NONE
+        if s.turbo:
+            return PRESET_BOOST
+        if s.mute:
+            return "mute"
+        if s.sleep:
+            return PRESET_SLEEP
+        return PRESET_NONE
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        s = self._state
+        if s is None:
+            return {}
+        return {
+            "health": s.health,
+            "display": s.display,
+            "clean": s.clean,
+            "mildew": s.mildew,
+            "fixation_v": s.fixation_v,
+            "fixation_h": s.fixation_h,
+        }
+
+    async def async_set_preset_mode(self, preset_mode: str) -> None:
+        s = self._state
+        if s is None:
+            return
+        turbo = s.turbo
+        mute = s.mute
+        sleep = s.sleep
+        if preset_mode == PRESET_NONE:
+            turbo = False
+            mute = False
+            sleep = False
+        elif preset_mode == PRESET_BOOST:
+            turbo = True
+            mute = False
+        elif preset_mode == "mute":
+            mute = True
+            turbo = False
+        elif preset_mode == PRESET_SLEEP:
+            sleep = True
+        await self.coordinator.device.set_state(
+            power=s.power,
+            temp=s.target_temp,
+            mode=s.mode,
+            fan_speed=s.fan_speed,
+            turbo=turbo,
+            mute=mute,
+            sleep=sleep,
+            health=s.health,
+            display=s.display,
+            clean=s.clean,
+            mildew=s.mildew,
+            fixation_v=s.fixation_v,
+            fixation_h=s.fixation_h,
+        )
+        await self.coordinator.async_request_refresh()
+
     async def async_set_hvac_mode(self, hvac_mode: HVACMode) -> None:
         s = self._state
         if s is None:
@@ -141,6 +209,10 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
                 sleep=s.sleep,
                 health=s.health,
                 display=s.display,
+                clean=s.clean,
+                mildew=s.mildew,
+                fixation_v=s.fixation_v,
+                fixation_h=s.fixation_h,
             )
         else:
             ac_mode = HVAC_TO_MODE.get(hvac_mode, AcMode.COOLING)
@@ -154,6 +226,10 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
                 sleep=s.sleep,
                 health=s.health,
                 display=s.display,
+                clean=s.clean,
+                mildew=s.mildew,
+                fixation_v=s.fixation_v,
+                fixation_h=s.fixation_h,
             )
         await self.coordinator.async_request_refresh()
 
@@ -175,6 +251,10 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
             sleep=s.sleep,
             health=s.health,
             display=s.display,
+            clean=s.clean,
+            mildew=s.mildew,
+            fixation_v=s.fixation_v,
+            fixation_h=s.fixation_h,
         )
         await self.coordinator.async_request_refresh()
 
@@ -194,6 +274,10 @@ class AuxLanClimate(CoordinatorEntity, ClimateEntity):
             sleep=s.sleep,
             health=s.health,
             display=s.display,
+            clean=s.clean,
+            mildew=s.mildew,
+            fixation_v=s.fixation_v,
+            fixation_h=s.fixation_h,
         )
         await self.coordinator.async_request_refresh()
 
