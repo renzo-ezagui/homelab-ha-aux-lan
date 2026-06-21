@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add AUX AC",
+        "description": "Enter the device details. The component will authenticate directly with the AC over UDP.",
+        "data": {
+          "name": "Device name",
+          "ip": "IP address",
+          "mac": "MAC address (e.g. aabbccddeeff or aa:bb:cc:dd:ee:ff)",
+          "scan_interval": "Poll interval (seconds, 10–300)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the AC. Check that the IP is reachable and the device is on the same LAN.",
+      "invalid_mac": "Invalid MAC address format.",
+      "unknown": "Unexpected error. Check logs for details."
+    },
+    "abort": {
+      "already_configured": "This device is already configured."
+    }
+  }
+}
