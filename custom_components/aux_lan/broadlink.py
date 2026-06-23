@@ -17,6 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 
 UDP_PORT = 80
 TIMEOUT = 3.0
+HEADER_LEN = 0x38
 
 MAGIC = bytes([0x5A, 0xA5, 0xAA, 0x55, 0x5A, 0xA5, 0xAA, 0x55])
 DEFAULT_KEY = bytes([
@@ -185,6 +186,27 @@ class BroadlinkLanDevice:
         self.device_key = decrypted[0x04:0x14]
         _LOGGER.debug("[%s] auth ok key=%s", self.ip, self.device_key.hex())
 
+    def _decrypt_payload(self, response: bytes, ctx: str) -> bytes:
+        """Decrypt a device response payload.
+
+        A short response (header only, no encrypted body) is the module's way
+        of saying it rejected our session — typically because it rebooted and
+        forgot the device_key we authed with. Surface it as BroadlinkAuthError
+        and drop the key so the coordinator re-auths instead of swallowing it
+        as a generic UpdateFailed and getting stuck forever.
+        """
+        if len(response) <= HEADER_LEN:
+            err = None
+            if len(response) >= 0x24:
+                err = struct.unpack("<h", response[0x22:0x24])[0]
+            _LOGGER.warning(
+                "[%s] %s: short response len=%d err_code=%s — stale session, forcing re-auth",
+                self.ip, ctx, len(response), err,
+            )
+            self.device_key = None
+            raise BroadlinkAuthError(f"stale session {self.ip} ({ctx}) err={err}")
+        return _decrypt(self.device_key, response[HEADER_LEN:])
+
     async def get_state(self) -> AcState:
         if self.device_key is None:
             raise BroadlinkAuthError("not authenticated")
@@ -199,8 +221,14 @@ class BroadlinkLanDevice:
         )
         self._pkt_count += 1
         response = await self._send_recv(packet)
-        payload = _decrypt(self.device_key, response[0x38:])
+        payload = self._decrypt_payload(response, "get_state")
         _LOGGER.debug("[%s] get_state payload=%s", self.ip, payload[:24].hex())
+
+        if len(payload) < 23:
+            self.device_key = None
+            raise BroadlinkAuthError(
+                f"get_state truncated payload len={len(payload)} {self.ip}"
+            )
 
         state = AcState()
         state.target_temp = 8 + (payload[12] >> 3)
@@ -247,7 +275,7 @@ class BroadlinkLanDevice:
             _LOGGER.debug("[%s] get_info timeout", self.ip)
             return None
 
-        payload = _decrypt(self.device_key, response[0x38:])
+        payload = self._decrypt_payload(response, "get_info")
         _LOGGER.debug("[%s] get_info payload=%s", self.ip, payload[:40].hex())
 
         if len(payload) < 34:
