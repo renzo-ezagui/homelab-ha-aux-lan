@@ -174,7 +174,7 @@ class BroadlinkLanDevice:
             bytes(payload),
             self._pkt_count,
         )
-        self._pkt_count += 1
+        self._pkt_count = (self._pkt_count + 1) & 0xFFFF
 
         try:
             response = await self._send_recv(packet)
@@ -219,7 +219,7 @@ class BroadlinkLanDevice:
             GET_STATE,
             self._pkt_count,
         )
-        self._pkt_count += 1
+        self._pkt_count = (self._pkt_count + 1) & 0xFFFF
         response = await self._send_recv(packet)
         payload = self._decrypt_payload(response, "get_state")
         _LOGGER.debug("[%s] get_state payload=%s", self.ip, payload[:24].hex())
@@ -268,7 +268,7 @@ class BroadlinkLanDevice:
             GET_INFO,
             self._pkt_count,
         )
-        self._pkt_count += 1
+        self._pkt_count = (self._pkt_count + 1) & 0xFFFF
         try:
             response = await self._send_recv(packet)
         except BroadlinkTimeoutError:
@@ -346,7 +346,7 @@ class BroadlinkLanDevice:
             bytes(req),
             self._pkt_count,
         )
-        self._pkt_count += 1
+        self._pkt_count = (self._pkt_count + 1) & 0xFFFF
         await self._send_recv(packet)
         _LOGGER.debug("[%s] set_state ok power=%s temp=%s mode=%s", self.ip, power, temp, mode)
 
